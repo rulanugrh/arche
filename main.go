@@ -140,7 +140,6 @@ func checkOctectClass(a string, net int) bool {
 	var forC []string
 
 	for classA := 1; classA <= 127; classA++ {
-		classA += 1
 		forA = append(forA, strconv.Itoa(classA))
 	}
 
@@ -152,15 +151,12 @@ func checkOctectClass(a string, net int) bool {
 		forC = append(forC, strconv.Itoa(classC))
 	}
 
-	if net >= 24 {
-		check := checkTrue(forC, a)
-		return check
-	} else if net >= 16 {
-		check := checkTrue(forB, a)
-		return check
-	} else if net >= 8 {
-		check := checkTrue(forA, a)
-		return check
+	if net >= 8 && checkTrue(forA, a) {
+		return true
+	} else if net >= 16 && checkTrue(forB, a) {
+		return true
+	} else if net >= 24 && checkTrue(forC, a){
+		return true
 	} else {
 		return false
 	}
