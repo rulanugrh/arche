@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
 func main() {
@@ -17,8 +20,13 @@ func main() {
 	class, _ := strconv.Atoi(forBroad[1])
 
 	forBroad = strings.Split(forBroad[0], ".")
-	network, ranges, broadcast, subnetmask := calcIP(forBroad[0], forBroad[1], forBroad[2], forBroad[3], class)
-	printOut(network, ranges, broadcast, subnetmask)
+	check := checkOctectClass(forBroad[0], class)
+	if check {
+		network, ranges, broadcast, subnetmask := calcIP(forBroad[0], forBroad[1], forBroad[2], forBroad[3], class)
+		printOut(network, ranges, broadcast, subnetmask)
+	} else {
+		errors("IP Class out of Index")
+	}
 }
 
 func calcNet(net int) int {
@@ -100,8 +108,73 @@ func calcIP(a string, b string, c string, d string, class int) (network []string
 }
 
 func printOut(network []string, ranges string, broadcast []string, subnet []string) {
-	fmt.Printf("Network     : %s\n", strings.Join(network, "."))
-	fmt.Printf("Range       : %s\n", ranges)
-	fmt.Printf("Broadcast   : %s\n", strings.Join(broadcast, "."))
-	fmt.Printf("Subnetmask  : %s\n", strings.Join(subnet, "."))
+	var Cyan = "\033[36m"
+
+	t := table.NewWriter()
+	t.AppendRow(table.Row{"Network		", strings.Join(network, ".")})
+	t.AppendRow(table.Row{"Range		", ranges})
+	t.AppendRow(table.Row{"Broadcast	", strings.Join(broadcast, ".")})
+	t.AppendRow(table.Row{"Subnetmask	", strings.Join(subnet, ".")})
+	t.SetStyle(table.StyleLight)
+	t.Style().Title.Align = text.AlignCenter
+	t.SetTitle(Cyan + "arche")
+
+	fmt.Println("\n" + t.Render() + "\n")
+}
+
+func errors(txt string) {
+	var Cyan = "\033[36m"
+
+	t := table.NewWriter()
+	t.AppendRow(table.Row{"error  ", txt})
+	t.SetStyle(table.StyleLight)
+	t.Style().Title.Align = text.AlignCenter
+	t.SetTitle(Cyan + "arche")
+
+	fmt.Println("\n" + t.Render() + "\n")
+}
+
+func checkOctectClass(a string, net int) bool {
+	var forA []string
+	var forB []string
+	var forC []string
+
+	for classA := 1; classA <= 127; classA++ {
+		classA += 1
+		forA = append(forA, strconv.Itoa(classA))
+	}
+
+	for classB := 128; classB <= 191; classB++ {
+		forB = append(forB, strconv.Itoa(classB))
+	}
+
+	for classC := 192; classC <= 255; classC++ {
+		forC = append(forC, strconv.Itoa(classC))
+	}
+
+	if net >= 24 {
+		check := checkTrue(forC, a)
+		return check
+	} else if net >= 16 {
+		check := checkTrue(forB, a)
+		return check
+	} else if net >= 8 {
+		check := checkTrue(forA, a)
+		return check
+	} else {
+		return false
+	}
+
+}
+
+func checkTrue(elems []string, containt string) bool {
+	for _, data := range elems {
+		check := strings.Contains(data, containt)
+		if check {
+			return true
+		}
+	}
+
+	return false
+
 }
